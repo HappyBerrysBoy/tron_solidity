@@ -1,0 +1,15 @@
+{
+  "name": "tron_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "trongrid": "^1.2.6",
+    "tronweb": "^3.0.0"
+  }
+}
