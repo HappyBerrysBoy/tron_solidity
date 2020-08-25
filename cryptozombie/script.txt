@@ -1,0 +1,1219 @@
+챕터1
+
+지난 번 트론토큰의 전송은 성공했으니 이제 스마트 컨트랙트를 만들어 보려고 합니다. 토큰을 받으면 어찌저찌 처리한 후에 다시 특정계정으로 보내거나, 스테이킹을 한다거나 하는 기능들을 만들어보려고요.
+
+아주 천천히 잘 가르쳐 주는 [크립토좀비](https://cryptozombies.io/ko/) 사이트를 이용해서 공부를 해보려고 합니다.
+
+이번 포스팅에서는 Solidity 속성들에 대해서 정리를 해봅니다.
+
+##### 1. pragma
+- 솔리디티 소스 코드 빌드 버전을 선언합니다.
+
+
+```
+pragma solidity ^0.4.19; // 버전은 상황에 맞도록 설정
+```
+
+
+##### 2. contract 
+- 컨트랙트 함수를 선언합니다.
+- 내부에 각종 소스를 듬뿍듬뿍 넣을 수 있습니다.
+
+```
+contract ZombieFactory {
+
+}
+```
+
+##### 3. 상태변수/정수
+- 상태변수는 컨트랙트 저장소에 영구적으로 저장됩니다. 즉 이더리움 체인에 기록이 된다는 것입니다.
+- 데이터베이스에 데이터를 쓰는 것과 동일하다고 보시면 됩니다.
+- 솔리디티에서 uint는 실제로 uint256, 즉 256비트 부호 없는 정수의 다른 표현입니다.
+- uint8, uint16, uint32 등과 같이 uint를 더 적은 비트로 선언할 수도 있습니다.
+- 주요 자료형
+
+> uint : 부호가 없는 정수형
+int : 정수형
+bool : 논리 자료형
+string : UTF-8 인코딩 문자열
+bytes : 바이트
+address : 이더리움 주소 값 (0xaDc7192A0…)
+레퍼런스 자료형
+배열 : 자료형이 같은 데이터를 묶은 자료 구조입니다.
+구조체1 : 다양한 자료형의 데이터를 묶은 자료 구조입니다.
+
+
+```
+unit dnaDigits = 16;
+```
+
+
+##### 4. 수학연산
+- 덧셈/뺄셈/곱셈/나눗셈 같은 연산입니다.
+- +, -, *, /, %(나머지 구하기), **(지수연산 ex:10 ** 2 = 10^2 = 100)
+
+```
+uint dnaModulus = 10 ** dnaDigits;
+```
+
+
+##### 5. 구조체
+- 조금 더 복잡한 자료형을 사용하기 위해서 사용되는 형태입니다.
+
+```
+struct Zombie {
+   string name;
+   uint dna;
+}
+```
+
+##### 6. 배열
+- Array 형태의 변수 선언 방법
+- 구조체의 배열도 가능합니다.
+
+```
+// 2개의 원소를 담을 수 있는 고정 길이의 배열:
+uint[2] fixedArray;
+// 또다른 고정 배열으로 5개의 스트링을 담을 수 있다:
+string[5] stringArray;
+// 동적 배열은 고정된 크기가 없으며 계속 크기가 커질 수 있다:
+uint[] dynamicArray;
+```
+
+##### 7. 가시성(visiability)
+- 솔리디티에서 함수는 기본적으로 public으로 선언됩니다.
+- external : 다른 컨트랙트나 트랜잭션을 통해서만 호출 될 수 있습니다. f()는 동작하지 않고, this.f()는 동작합니다.
+- public : 누구나 접근 가능합니다. 단, setter는 생성되지 않기 때문에 지정된 값을 변경하는 것은 불가능합니다.
+- internal : 내부적으로만 접근가능한 변수입니다. 접근을 위해서 this를 사용 할 수 없습니다.
+- private : internal과 비슷하게 내부적으로만 사용가능하지만 상속된 컨트랙트에서는 접근 할 수 없습니다.
+
+##### 8. 함수선언
+- function 명령어를 이용하여 함수를 선언합니다.
+- 함수의 parameter은 _로 시작해서 다른 변수와 구분하는 관례를 따르는 것이 좋습니다.
+- private 함수명은 언더바(_)로 시작하는 것이 관례입니다.
+
+```
+function _createZombie(string _name, uint _dna) private {
+   zombies.push(Zombie(_name, _dna));
+}
+```
+
+##### 9. 함수제어자(view, pure)
+- view로 선언된 함수는 함수 내에 데이터가 변경되지 않는 다는 것을 명시하는 것입니다.
+- pure로 선언된 함수는 함수 내부의 변수가 외부의 변수도 접근하지 않는다는 것을 명시하는 것입니다.(paramter 변수만으로 함수 내부가 모두 작동됨)
+
+```
+function sayHello() public view returns (string) {}
+
+function _multiply(uint a, uint b) private pure returns (uint) {
+  return a * b;
+}
+```
+
+##### 10. keccak256
+- keccak256함수는 입력 스트링 값을 랜덤 256비트 16진수로 변경하여 주는 함수입니다.
+- keccak256함수를 이용하여 발생시킨 랜덤 값은 보안에 뛰어나다고 볼 수는 없습니다. 일단 랜덤 값이 필요한 경우에만 활용하는 것으로 하면 될 것 같습니다.
+
+```
+//6e91ec6b618bb462a4a6ee5aa2cb0e9cf30f7a052bb467b0ba58b8748c00d2e5
+keccak256("aaaab");
+//b1f078126895a1424524de5321b339ab00408010b7cf0e6ed451514981e58aa9
+keccak256("aaaac");
+```
+
+##### 11. 형 변환
+
+```
+uint8 a = 5;
+uint b = 6;
+// a * b가 uint8이 아닌 uint를 반환하기 때문에 에러 메시지가 난다:
+uint8 c = a * b; 
+// b를 uint8으로 형 변환해서 코드가 제대로 작동하도록 해야 한다:
+uint8 c = a * uint8(b); 
+
+// keccak256으로 나온 값을 uint로 형 변환
+uint rand = uint(keccak256(_str));
+
+```
+
+##### 12. 이벤트
+- 사용자 단에서 무언가 액션이 발생했을 때 작동하는 기능
+
+```
+// 이벤트를 선언한다
+event IntegersAdded(uint x, uint y, uint result);
+
+function add(uint _x, uint _y) public {
+  uint result = _x + _y;
+  // 이벤트를 실행하여 앱에게 add 함수가 실행되었음을 알린다:
+  IntegersAdded(_x, _y, result);
+  return result;
+}
+
+```
+
+
+챕터2
+
+오늘은 조금더 심화 과정으로 들어갑니다.
+
+한번 정리해보겠습니다.
+
+___
+
+##### 1. 주소(address)
+- 모든 이더리움 계정은 ETH 잔액을 가집니다.
+- 계정을 통해 다른 계정과 이더를 주고 받을 수 있습니다.
+- "주소는 특정 유저(혹은 스마트 컨트랙트)가 소유한다"라는 점을 이해하고 넘어가면 될 것 같습니다.
+
+##### 2. 매핑(mapping)
+- struct와 비슷하게 솔리디티에서 구조화된 데이터를 저장하는 또다른 방법입니다.
+- HashMap 또는 Hashtable 이라고 생각하면 편합니다.(key - value 구조)
+- 매핑은 기본적으로 키-값 (key-value) 저장소로, 데이터를 저장하고 검색하는 데 이용됩니다.
+
+```
+// 금융 앱용으로, 유저의 계좌 잔액을 보유하는 uint를 저장한다: 
+mapping (address => uint) public accountBalance;
+// 혹은 userID로 유저 이름을 저장/검색하는 데 매핑을 쓸 수도 있다 
+mapping (uint => string) userIdToName;
+```
+
+##### 3. Msg.sender
+- 솔리디티에는 모든 함수에서 이용 가능한 특정 전역 변수들이 있습니다.
+- 그 중의 하나가 현재 함수를 호출한 사람 (혹은 스마트 컨트랙트)의 주소를 가리키는 msg.sender 입니다.
+- 솔리디티에서 함수 실행은 항상 외부 호출자에서 시작됩니다. 컨트랙트는 누군가가 컨트랙트의 함수를 호출할 때까지 블록체인 상에서 아무 것도 하지 않습니다.
+- 그렇기 때문에 항상 msg.sender는 있다고 생각하시면 됩니다.
+
+```
+mapping (address => uint) favoriteNumber;
+
+function setMyNumber(uint _myNumber) public {
+  // `msg.sender`에 대해 `_myNumber`가 저장되도록 `favoriteNumber` 매핑을 업데이트한다 `
+  favoriteNumber[msg.sender] = _myNumber;
+  // ^ 데이터를 저장하는 구문은 배열로 데이터를 저장할 떄와 동일하다 
+}
+
+function whatIsMyNumber() public view returns (uint) {
+  // sender의 주소에 저장된 값을 불러온다 
+  // sender가 `setMyNumber`을 아직 호출하지 않았다면 반환값은 `0`이 될 것이다
+  return favoriteNumber[msg.sender];
+}
+```
+
+##### 4. Require(조건문 같은 느낌!)
+- require은 특정 조건이 참이 아닐 때 함수가 에러 메시지를 발생하고5 실행을 멈추게 됩니다.
+
+```
+function sayHiToVitalik(string _name) public returns (string) {
+  // _name이 "Vitalik"인지 비교한다. 참이 아닐 경우 에러 메시지를 발생하고 함수를 벗어난다
+  // (참고: 솔리디티는 고유의 스트링 비교 기능을 가지고 있지 않기 때문에 
+  // 스트링의 keccak256 해시값을 비교하여 스트링 값이 같은지 판단한다)
+  require(keccak256(_name) == keccak256("Vitalik"));
+  // 참이면 함수 실행을 진행한다:
+  return "Hi!";
+}
+```
+
+##### 5. 상속
+- 컨트랙트는 상속이 가능합니다.
+- java/c#의 상속과 동일한 개념입니다.
+- 문법은 is를 사용하게 됩니다.
+- BabyDoge는 Doge에 정의된 public 함수는 모두 접근이 가능합니다.
+
+```
+contract Doge {
+  function catchphrase() public returns (string) {
+    return "So Wow CryptoDoge";
+  }
+}
+
+contract BabyDoge is Doge {
+  function anotherCatchphrase() public returns (string) {
+    return "Such Moon BabyDoge";
+  }
+}
+```
+
+##### 6. Import
+- 다른 파일을 불러오는 기능입니다.
+
+```
+import "./someothercontract.sol";
+
+contract newContract is SomeOtherContract {
+
+}
+```
+
+
+##### 7. Storage vs Memory
+- 솔리디티에는 변수를 저장할 수 있는 공간으로 ***storage와 memory*** 두 가지가 있습니다.
+- Storage는 블록체인 상에 영구적으로 저장되는 변수를 의미합니다. 
+- Memory는 임시적으로 저장되는 변수로, 컨트랙트 함수에 대한 외부 호출들이 일어나는 사이에 지워집니다.
+- 솔리디티가 알아서 처리해 주기 때문이지 대부분의 경우에 이 키워드들을 이용할 필요가 없습니다. 
+- 상태 변수(함수 외부에 선언된 변수)는 초기 설정상 storage로 선언되어 블록체인에 영구적으로 저장되는 반면, 함수 내에 선언된 변수는 memory로 자동 선언되어서 함수 호출이 종료되면 사라지게 됩니다.
+- 하지만 이 키워드들을 사용해야 하는 경우가 있습니다. 바로 함수 내의 구조체와 배열을 처리할 때!!
+
+```
+contract SandwichFactory {
+  struct Sandwich {
+    string name;
+    string status;
+  }
+
+  Sandwich[] sandwiches;
+
+  function eatSandwich(uint _index) public {
+    // Sandwich mySandwich = sandwiches[_index];
+
+    // ^ 꽤 간단해 보이나, 솔리디티는 여기서 
+    // `storage`나 `memory`를 명시적으로 선언해야 한다는 경고 메시지를 발생한다. 
+    // 그러므로 `storage` 키워드를 활용하여 다음과 같이 선언해야 한다:
+    Sandwich storage mySandwich = sandwiches[_index];
+    // ...이 경우, `mySandwich`는 저장된 `sandwiches[_index]`를 가리키는 포인터이다.
+    // 그리고 
+    mySandwich.status = "Eaten!";
+    // ...이 코드는 블록체인 상에서 `sandwiches[_index]`을 영구적으로 변경한다. 
+
+    // 단순히 복사를 하고자 한다면 `memory`를 이용하면 된다: 
+    Sandwich memory anotherSandwich = sandwiches[_index + 1];
+    // ...이 경우, `anotherSandwich`는 단순히 메모리에 데이터를 복사하는 것이 된다. 
+    // 그리고 
+    anotherSandwich.status = "Eaten!";
+    // ...이 코드는 임시 변수인 `anotherSandwich`를 변경하는 것으로 
+    // `sandwiches[_index + 1]`에는 아무런 영향을 끼치지 않는다. 그러나 다음과 같이 코드를 작성할 수 있다: 
+    sandwiches[_index + 1] = anotherSandwich;
+    // ...이는 임시 변경한 내용을 블록체인 저장소에 저장하고자 하는 경우이다.
+  }
+}
+```
+
+##### 8. 함수 접근 제어자 더 알아보기
+- private으로 선언된 함수는, 상속받은 컨트랙트에서 접근할 수 없다.
+- internal 접근제어자 : internal은 함수가 정의된 컨트랙트를 상속하는 컨트랙트에서도 접근이 가능하다 점을 제외하면 private과 동일합니다.
+- external 접근제어자 : external은 함수가 컨트랙트 바깥에서만 호출될 수 있고 컨트랙트 내의 다른 함수에 의해 호출될 수 없다는 점을 제외하면 public과 동일합니다.
+
+```
+contract Sandwich {
+  uint private sandwichesEaten = 0;
+
+  function eat() internal {
+    sandwichesEaten++;
+  }
+}
+
+contract BLT is Sandwich {
+  uint private baconSandwichesEaten = 0;
+
+  function eatWithBacon() public returns (string) {
+    baconSandwichesEaten++;
+    // eat 함수가 internal로 선언되었기 때문에 여기서 호출이 가능하다 
+    eat();
+  }
+}
+```
+
+##### 9. Interface(다른 컨트랙트와 상호작용하기)
+- 블록체인 상에 있으면서 우리가 소유하지 않은 컨트랙트와 우리 컨트랙트가 상호작용을 하려면 우선 인터페이스를 정의해야합니다.
+- interface 정의를 할 때에도 contract 명령어를 이용하여 정의한다.
+
+```
+// 임의의 contract
+contract LuckyNumber {
+  mapping(address => uint) numbers;
+
+  function setNum(uint _num) public {
+    numbers[msg.sender] = _num;
+  }
+
+  function getNum(address _myAddress) public view returns (uint) {
+    return numbers[_myAddress];
+  }
+}
+
+// LuckyNumber을 참조하기 위하여 interface 선언
+contract NumberInterface {
+  function getNum(address _myAddress) public view returns (uint);
+}
+```
+
+```
+// 크립토kitty의 공개함수(external로 선언되어 외부에서만 호출할 수 있다.)
+// solidity는 그리고 아래 함수처럼 한번에 여러 값을 반환 할 수 있다.
+function getKitty(uint256 _id) external view returns (
+    bool isGestating,
+    bool isReady,
+    uint256 cooldownIndex,
+    uint256 nextActionAt,
+    uint256 siringWithId,
+    uint256 birthTime,
+    uint256 matronId,
+    uint256 sireId,
+    uint256 generation,
+    uint256 genes
+) {
+    Kitty storage kit = kitties[_id];
+
+    // if this variable is 0 then it's not gestating
+    isGestating = (kit.siringWithId != 0);
+    isReady = (kit.cooldownEndBlock <= block.number);
+    cooldownIndex = uint256(kit.cooldownIndex);
+    nextActionAt = uint256(kit.cooldownEndBlock);
+    siringWithId = uint256(kit.siringWithId);
+    birthTime = uint256(kit.birthTime);
+    matronId = uint256(kit.matronId);
+    sireId = uint256(kit.sireId);
+    generation = uint256(kit.generation);
+    genes = kit.genes;
+}
+```
+
+##### 10. Interface 연동(다른 컨트랙트와 연동 방법)
+- 다른 컨트랙트의 주소를 입력하여 참조를 할 수 있다.
+
+```
+// NumberInterface는 위 9.번 내용 소스 참조
+contract MyContract {
+  address NumberInterfaceAddress = 0xab38...
+  // ^ 이더리움상의 FavoriteNumber 컨트랙트 주소이다
+  NumberInterface numberContract = NumberInterface(NumberInterfaceAddress)
+  // 이제 `numberContract`는 다른 컨트랙트를 가리키고 있다.
+
+  function someFunction() public {
+    // 이제 `numberContract`가 가리키고 있는 컨트랙트에서 `getNum` 함수를 호출할 수 있다:
+    uint num = numberContract.getNum(msg.sender);
+    // ...그리고 여기서 `num`으로 무언가를 할 수 있다
+  }
+}
+```
+
+##### 11. 다수의 반환 값 처리
+- 다수의 값을 반환하는 방법은 "return (1, 2, 3);" 와 같은 방법을 사용한다.
+
+```
+function multipleReturns() internal returns(uint a, uint b, uint c) {
+  return (1, 2, 3);
+}
+
+function processMultipleReturns() external {
+  uint a;
+  uint b;
+  uint c;
+  // 다음과 같이 다수 값을 할당한다:
+  (a, b, c) = multipleReturns();
+}
+
+// 혹은 단 하나의 값에만 관심이 있을 경우: 
+function getLastReturnValue() external {
+  uint c;
+  // 다른 필드는 빈칸으로 놓기만 하면 된다: 
+  (,,c) = multipleReturns();
+}
+```
+
+##### 12. if문
+- if문은 여느 언어의 사용법과 동일합니다.
+- 스트링 간의 동일 여부를 판단하기 위해 keccak256 해시 함수를 이용해야 합니다.
+
+```
+function eatBLT(string sandwich) public {
+  // 스트링 간의 동일 여부를 판단하기 위해 keccak256 해시 함수를 이용해야 한다는 것을 기억하자 
+  if (keccak256(sandwich) == keccak256("BLT")) {
+    eat();
+  }
+}
+```
+
+챕터3
+
+오늘은 솔리디티 심화과정입니다.
+
+꽤나 재밌어서 단기간에 쭉 달려 봅니다..!!! 가즈아!!!
+
+___
+
+##### 1. 컨트랙트의 불변성
+- 이더리움에 컨트랙트를 배포하고 나면, 컨트랙트는 변하지 않습니다.(Immutable).(컨트랙트를 수정 불가!!)
+- 한번 배포한 컨트랙트는 블록체인에 영구적으로 보존됩니다.
+- 그렇기 때문에 만약 컨트랙트 코드에 문제가 있더라도 고칠 수가 없습니다.
+- 장점으로는 한번 사용해본 컨트랙트는 평생 변화되지 않는다는 믿음으로 계속해서 사용 할 수가 있습니다.
+
+##### 2. 외부의존성
+- 위에서 설명한 컨트랙트의 불변성 때문에 대게의 경우 DAPP에서 사용되는 값들 중 일부분은 외부에서 제공(parameter을 통해서)합니다.
+- 예를들자면, 외부 컨트랙트를 참조 할 때, 외부 컨트랙트 주소를 컨트랙트 내부에 저장하지 않고, 호출 할 때 컨트랙트 주소를 전달하는 식으로 사용하면 됩니다.
+
+```
+   // 외부에 변수를 정의한다.
+   KittyInterface kittyContract;
+
+  // 함수 호출 시 address 값을 받아서 처리한다.
+  function setKittyContractAddress(address _address) external {
+    kittyContract = KittyInterface(_address);
+  }
+```
+
+##### 3. 소유 가능한 컨트랙트
+- 위 예시에서 설정한 setKittyContractAddress 함수는 external이라, 누구든 이 함수를 호출하여 컨트랙트 주소를 변경할 수 있는 문제점이 있습니다.
+- 이런 경우에 대처하기 위해서 쓰는 하나의 방법은 컨트랙트를 소유 가능하게 만드는 것입니다.
+- 이를 위해서 "OpenZeppelin의 Ownable 컨트랙트" 라는 검증받은 스마트컨트랙트 라이브러리를 이용합니다.(library를 잘 찾아서 유용한 것들은 자주 사용하면 좋을 것 같습니다.)
+- 아래는 Ownable 컨트랙트 소스입니다.
+```
+// 1. 컨트랙트가 생성되면 컨트랙트의 생성자가 owner에 msg.sender(컨트랙트를 배포한 사람)를 대입한다.
+// 2. 특정한 함수들에 대해서 오직 소유자만 접근할 수 있도록 제한 가능한 onlyOwner 제어자를 추가한다.
+// 3. 새로운 소유자에게 해당 컨트랙트의 소유권을 옮길 수 있도록 한다.
+
+/**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  function Ownable() public {
+    owner = msg.sender;
+  }
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
+}
+```
+
+##### 4. 생성자(Constructor)
+- 위의 Ownable 소스 내부중에 "function Ownable() public" 부분이 보입니다.
+- 이부분은 생성자로서, 컨트랙트가 생성될때 최초 1회만 실행됩니다.
+
+##### 5. 함수 제어자(Function Modifier)
+- 위 소스 중 "modifier onlyOwner()" 부분입니다.
+- 제어자는 다른 함수들에 대한 접근을 제어하기 위해 사용되는 일종의 유사 함수라고합니다. 보통 함수 실행 전의 요구사항 충족 여부를 확인하는 데에 사용됩니다. 
+- onlyOwner의 경우에는 접근을 제한해서 오직 컨트랙트의 소유자만 해당 함수를 실행할 수 있도록 하기 위해 사용하는 것입니다.
+- 함수 제어자는 함수처럼 보이지만, function 키워드 대신 modifier 키워드를 사용합니다. 
+- 함수 제어자는 함수를 호출하듯이 직접 호출할 수는 없습니다. 
+- 대신에 함수 정의부 끝에 해당 함수의 작동 방식을 바꾸도록 제어자의 이름을 붙일 수 있습니다.
+
+```
+contract MyContract is Ownable {
+  event LaughManiacally(string laughter);
+
+  // 아래와 같이 함수 마지막에 함수제어자 명을 붙여서 작동하게 할 수 있습니다.
+  function likeABoss() external onlyOwner {
+    LaughManiacally("Muahahahaha");
+  }
+}
+```
+- likeABoss 함수를 호출하면, onlyOwner의 코드가 먼저 실행됩니다. 
+- 그리고 onlyOwner의 _; 부분을 likeABoss 함수로 되돌아가 해당 코드를 실행하는 방식으로 작동됩니다.
+- 함수에 onlyOwner 제어자를 추가하면 오직 컨트랙트의 소유자만이 해당 함수를 호출할 수 있습니다.
+
+어제 내용에 이어서 마저 학습해봅니다.
+챕터3만 되어도 꽤나 심화과정이네요. 코드 한줄한줄을 엄청 고민하면서 짜야겠습니다. ㅠㅠ
+
+___
+
+##### 5. 가스(Gas)
+- 가스는 이더리움 DApp이 사용하는 연료입니다.
+- 함수를 실행하는 데에 얼마나 많은 가스가 필요한지는 그 함수의 로직(논리 구조)이 얼마나 복잡한지에 따라 달라집니다.
+- 각각의 연산은 소모되는 가스 비용(gas cost)이 있고, 그 연산을 수행하는 데에 소모되는 컴퓨팅 자원의 양이 이 비용을 결정합니다.
+- 참고로 storage에 값을 쓰는 것은 두 개의 정수를 더하는 것보다 훨씬 비용이 높습니다.
+- 전체 가스 비용은 그 함수를 구성하는 개별 연산들의 가스 비용을 모두 합친 것과 같습니다.
+- 함수를 실행하는 것은 사용자들에게 실제 돈을 쓰게 하기 때문에, 이더리움에서 코드 최적화는 다른 프로그래밍 언어들에 비해 훨씬 더 중요합니다.
+
+```
+// 가스를 아끼기 위한 구조체 압축
+// 솔리디티에서는 uint의 크기에 상관없이 256비트의 저장 공간을 미리 잡아습니다. 
+// 그렇기 때문에 uint(uint256) 대신에 uint8을 쓰는 것은 가스 소모를 줄이는 데에 아무 영향이 없습니다.
+// 하지만 struct 내부에서는 가능한 작은 크기의 uint를 쓰는 것이 가스비용을 줄이는데 도움이 됩니다.
+
+// 그리고 동일한 데이터 타입은 하나로 묶어놓는 것이 좋습니다. 
+// 구조체에서 서로 옆에 같은 데이터 타입을 선언하면 솔리디티에서 사용하는 저장 공간을 최소화합니다. 
+// 예를 들면, uint c; uint32 a; uint32 b;라는 필드로 구성된 구조체가 uint32 a; uint c; uint32 b; 필드로 구성된 구조체보다 가스를 덜 소모합니다.
+
+// 비추천
+struct NormalStruct {
+  uint a;
+  uint b;
+  uint c;
+}
+
+// 추천
+struct MiniMe {
+  uint32 a;
+  uint32 b;
+  uint c;
+}
+
+```
+
+##### 6. 시간 단위
+- 위에서 선언한 readyTime "재사용 대기 시간" 변수입니다.
+- 이 속성 없이는 해당 함수를 쉬지않고 계속 실행할 수 있기 때문에 추가합니다.
+- 여기에 솔리디티의 시간단위(Time units)를 사용합니다.
+- now : 1970년 1월 1일 부터 지금까지 지나온 초(second)
+- 솔리디티에는 seconds, minutes, hours, days, weeks, years 같은 시간 단위 또한 포함하고 있습니다. 
+- 이들은 그에 해당하는 길이 만큼의 초 단위 uint 숫자로 변환됩니다. 
+- 1 minutes는 60, 1 hours는 3600(60초 x 60 분), 1 days는 86400(24시간 x 60분 x 60초) 같이 변환됩니다.
+
+```
+uint lastUpdated;
+
+// `lastUpdated`를 `now`로 설정
+function updateTimestamp() public {
+  lastUpdated = now;
+}
+
+// 마지막으로 `updateTimestamp`가 호출된 뒤 5분이 지났으면 `true`를, 5분이 아직 지나지 않았으면 `false`를 반환
+function fiveMinutesHavePassed() public view returns (bool) {
+  return (now >= (lastUpdated + 5 minutes));
+}
+```
+
+##### 7. public / external 함수와 보안
+- 위 두개의 제어자는 보안 점검시에 아주 유심히 살펴보아야 합니다.
+- 보안을 점검하는 좋은 방법으로 모든 public과 external 함수를 검사하고,사용자들이 그 함수들을 남용할 수 있는 방법을 생각해보는 것입니다. 
+- 이 함수들이 onlyOwner 같은 제어자를 갖지 않는 이상, 어떤 사용자든 이 함수들을 호출하고 자신들이 원하는 모든 데이터를 함수에 전달할 수 있으니까 말입니다.
+
+##### 8. 인수를 가지는 함수 제어자
+- 함수 제어자도 인수를 받을 수 있습니다.
+
+```
+// 사용자의 나이를 저장하기 위한 매핑
+mapping (uint => uint) public age;
+
+// 사용자가 특정 나이 이상인지 확인하는 제어자
+modifier olderThan(uint _age, uint _userId) {
+  require (age[_userId] >= _age);
+  _;
+}
+
+// 16세 이상만 운전을 허용하도록 합니다.
+// `olderThan` 제어자를 인수와 함께 호출하려면 이렇게 하면 되네:
+function driveCar(uint _userId) public olderThan(16, _userId) {
+  // 필요한 함수 내용들
+}
+```
+
+##### 9. view 함수 이용하여 가스소모 줄이기
+- view 함수는 블록체인 상에서 실제로 어떤 것도 수정하지 않기 떄문에 view 함수는 사용자에 의해 외부에서 호출되었을 때 가스를 전혀 소모하지 않습니다.
+- 하지만 만약 view 함수가 동일 컨트랙트 내에 있는, view 함수가 아닌 다른 함수에서 내부적으로 호출될 경우, 가스가 소모됩니다.
+- 이것은 다른 함수가 이더리움에 트랜잭션을 생성하고, 이는 모든 개별 노드에서 검증되어야 하기 때문입니다. 
+- 그렇기 때문에 view 함수는 외부에서 호출됐을 때에만 무료입니다.
+
+##### 10. Storage는 비싸다
+- 솔리디티에서 비싼 연산 중 하나는 storage를 사용하는 것입니다. 그중에서도 쓰기 연산이 가장 가스를 많이 소모합니다.
+- 데이터의 일부를 쓰거나 바꿀 때마다, 블록체인에 영구적으로 기록되기 때문입니다.
+- 비용을 최소화하기 위해서, 진짜 필요한 경우가 아니면 storage에 데이터를 쓰지 않는 것이 좋습니다. 
+- 이를 위해 때때로는 겉보기에 비효율적으로 보이는 프로그래밍 구성을 할 필요가 있습니다 
+- 어떤 배열에서 내용을 빠르게 찾기 위해, 단순히 변수에 저장하는 것 대신 함수가 호출될 때마다 배열을 memory에 다시 만드는 것이 가스소모를 줄이는 방법입니다.
+- 대부분의 프로그래밍 언어에서는, 큰 데이터 집합의 개별 데이터에 모두 접근하는 것은 비용이 비싸지만, 솔리디티에서는 그 접근이 external view 함수라면 storage를 사용하는 것보다 더 저렴한 방법입니다.
+
+##### 11. 메모리에 배열 선언
+- Storage에 아무것도 쓰지 않고도 함수 안에 새로운 배열을 만들려면 배열에 memory 키워드를 씁니다.
+- 이 배열은 함수가 끝날 때까지만 존재할 것이고, 이는 storage의 배열을 직접 업데이트하는 것보다 가스 소모 측면에서 훨씬 저렴합니다. 
+- 외부에서 호출되는 view 함수라면 무료인것은 덤!!!
+- 메모리 배열은 반드시 길이 인수와 함께 생성되어야 합니다.
+
+```
+function getArray() external pure returns(uint[]) {
+  // 메모리에 길이 3의 새로운 배열을 생성한다.
+  uint[] memory values = new uint[](3);
+  // 여기에 특정한 값들을 넣는다.
+  values.push(1);
+  values.push(2);
+  values.push(3);
+  // 해당 배열을 반환한다.
+  return values;
+}
+```
+
+
+챕터4
+바짝 달려봅니다..!! 조금 더 심화과정으로 가봅니다.
+
+___
+
+##### 0. 복습 몇가지
+- 접근제어자(function modifier) : private(해당 컨트랙트에서만 사용), internal(private + 상속 컨트랙트에서도 사용), external(외부에서만 호출), public(내/외부 모두 호출가능)
+- 상태제어자(state modifier) : view(어떤 데이터도 블록체인에 저장하거나 수정하지 않음), pure(블록체인으로 부터 어떤 데이터도 읽지 않음)
+- 제어자(함수 끝에 해당 조건 체크 등으로 사용) : onlyOwner, aboveLevel
+
+##### 1. Payable
+- 함수제어자 중에 하나입니다.
+- 이더리움을 받을 수 있는 함수입니다.
+- 함수를 실행하기 위해 컨트랙트에 일정 금액을 지불하게 하는 것으로 사용됩니다.
+- msg.value : 컨트랙트로 이더가 보내진 양
+- ether 은 기본적으로 포함된 단위입니다.
+
+```
+contract OnlineStore {
+  function buySomething() external payable {
+    // 함수 실행에 0.001이더가 보내졌는지 확실히 하기 위해 확인:
+    require(msg.value == 0.001 ether);
+    // 보내졌다면, 함수를 호출한 자에게 디지털 아이템을 전달하기 위한 내용 구성:
+    transferThing(msg.sender);
+  }
+}
+
+// 외부에서 위 함수를 호출한다고 가정
+// `OnlineStore`는 이더리움 상의 컨트랙트를 가리킨다고 가정:
+OnlineStore.buySomething({from: web3.eth.defaultAccount, value: web3.utils.toWei(0.001)})
+```
+
+##### 2. 출금
+- transfer 함수를 사용하여 이더를 특정 주소로 전달 할 수 있습니다.
+- this.balance는 컨트랙트에 저장되어 있는 전체 잔액을 말합니다.
+- 자산을 이동시키는 것은 중요한 부분이므로 컨트랙트 소유자만 가능 하도록 제어하는 것이 좋습니다.(Ownable, onlyOwner 사용)
+
+```
+contract GetPaid is Ownable {
+  function withdraw() external onlyOwner {
+    owner.transfer(this.balance);
+  }
+}
+```
+
+##### 3. 난수 생성
+- 솔리디티에서 난수 만들기 가장 쉬운 방법은 keccak256 해시 함수를 사용하는 것입니다.
+- "하지만 이 난수는 안전하지 못 합니다."
+- 이유는 자신이 만약 노드를 실행하고 있다면, 자신의 노드에만 트랜잭션을 알리고 이것을 공유하지 않을 수 있기 때문입니다. 그 후 자신이 이기는지 확인 후 이기는 트랜잭션만 공유하는 식으로 악용할 수 있는 부분이 있기 때문입니다.
+- 물론 이 방법을 사용하려면 본인이 블럭채굴자가 되어서 본인이 채굴을 하고 그안에 트랜잭션을 담을 때 고르는 방법이므로, 꽤나 큰 자원을 필요로 합니다.(수만개의 이더노드중 본인이 채굴할 확률이 필요)
+- 하지만 액수가 어마어마하다면 불가능한 일은 아니기 때문에 조심하는 것이 좋습니다.
+- 이를 해결하기 위한 방법은 외부의 난수 함수(오라클)를 이용하는 방법도 있습니다.(그 외의 방법은 여기를 참조. https://ethereum.stackexchange.com/questions/191/how-can-i-securely-generate-a-random-number-in-my-smart-contract)
+- 
+
+```
+// Generate a random number between 1 and 100:
+uint randNonce = 0;
+uint random = uint(keccak256(now, msg.sender, randNonce)) % 100;
+randNonce++;
+uint random2 = uint(keccak256(now, msg.sender, randNonce)) % 100;
+```
+
+
+챕터5
+
+오늘은 쪼개는 것이 불가능하고 고유한 토큰(NFT)의 표준인 ERC721에 대해서 알아봅니다.
+
+___
+
+##### 1. 이더리움의 토큰(ERC-20)
+- 이더리움에서 토큰은 기본적으로 몇몇 공통 규약을 따르는 스마트 컨트랙트입니다.
+- 즉 다른 모든 토큰 컨트랙트가 사용하는 표준 함수 집합을 구현하는 것입니다.
+- 예를 들면 transfer(address _to, uint256 _value)나 balanceOf(address _owner) 같은 함수같은 것들이 모든 ERC-20에 정의되어 있습니다.
+- 내부적으로 스마트 컨트랙트는 보통 mapping(address => uint256) balances와 같은 매핑을 가지고 있습니다.(주소마다 잔액기록)
+- 즉 토큰은 하나의 컨트랙트입니다. 그 안에서 누가 얼마나 많은 토큰을 가지고 있는지 기록하고, 몇몇 함수를 가지고 사용자들이 그들의 토큰을 다른 주소로 전송할 수 있게 해주는 표준 컨트랙트인 것이지요.
+- 그렇기 때문에 ERC-20으로 생성되는 토큰의 경우 다른 어떤 ERC20 토큰과도 상호작용이 가능합니다. 거래소에서도 마찬가지이지요.
+
+##### 2. 이더리움의 토큰(ERC-721)
+- ERC20 토큰은 화폐처럼 사용되는 토큰으로는 정말 적절합니다. 
+- 하지만 게임에서 아이템이나 캐릭터를 표현하기에는 부족한 부분이 있습니다.
+- 이유 중 첫째로, ERC-721은 화폐처럼 분할을 할 수가 없습니다.
+- ERC-20은 0.237ETH를 보낼 수 있지만, 0.237개의 ERC-721을 보내는 것은 불가능합니다.
+- ERC-721은 유일하기 때문에 모든 토큰들을 구분할 수가 있습니다.
+- 각각의 토큰은 유일한 ID도 가지고 있습니다.
+- 참고: ERC721 표준은 현재 초안인 상태이고, 아직 공식으로 채택된 구현 버전이 없습니다. 여기서는 OpenZeppelin 라이브러리에서 쓰이는 현재 버전을 사용할 것이지만, 공식 릴리즈 이전에 언젠가 바뀔 가능성도 있습니다. 이것이 ERC721 토큰의 정식 표준으로 생각하지 않으셔도 됩니다.
+
+```
+// ERC721의 표준
+contract ERC721 {
+  event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 _tokenId);
+
+  function balanceOf(address _owner) public view returns (uint256 _balance);
+  function ownerOf(uint256 _tokenId) public view returns (address _owner);
+  function transfer(address _to, uint256 _tokenId) public;
+  function approve(address _to, uint256 _tokenId) public;
+  function takeOwnership(uint256 _tokenId) public;
+}
+```
+
+##### 3. 다중 상속
+- Solidity는 다중상속 기능을 지원합니다.
+
+```
+import "./erc721.sol";
+
+contract ZombieOwnership is ZombieAttack, ERC721 {
+
+}
+```
+
+
+##### 4. balanceOf, ownerOf
+- balanceOf : address를 받아, 해당 address가 토큰을 얼마나 가지고 있는지 반환
+
+```
+   function balanceOf(address _owner) public view returns (uint256 _balance);
+```
+
+- ownerOf : 토큰 ID를 받아, 이를 소유하고 있는 사람의 address를 반환
+
+```
+  function ownerOf(uint256 _tokenId) public view returns (address _owner);
+```
+
+##### 5. ERC-721 전송로직(transfer)
+- 토큰 전송에는 2가지 방법이 있습니다.
+- 첫 번째 방법은 토큰의 소유자가 전송 상대의 address, 전송하고자 하는 tokenId와 함께 transfer 함수로 전송하는 것입니다.(토큰을 보내는 사람이 함수를 호출)
+- 두 번째 방법은 토큰의 소유자가 먼저 위에서 본 정보들을 가지고 approve를 호출하는 것입니다. 그리고서 컨트랙트에 누가 해당 토큰을 가질 수 있도록 허가를 받았는지 저장합니다. 보통 mapping (uint256 => address)를 써서 사용합니다. 이후 누군가 takeOwnership을 호출하면, 해당 컨트랙트는 이 msg.sender가 소유자로부터 토큰을 받을 수 있게 허가를 받았는지 확인하고, 허가를 받았다면 해당 토큰을 그에게 전송합니다.(토큰을 받는 사람이 호출)
+
+```
+function transfer(address _to, uint256 _tokenId) public;
+function approve(address _to, uint256 _tokenId) public;
+function takeOwnership(uint256 _tokenId) public;
+```
+
+```
+function _transfer(address _from, address _to, uint256 _tokenId) private {
+    ownerZombieCount[_to]++;
+    ownerZombieCount[_from]--;
+    zombieToOwner[_tokenId] = _to;
+    Transfer(_from, _to, _tokenId);
+  }
+```
+
+어제에 이어서 챕터5 정리합니다.
+꽤 내용이 기네요!!
+
+___
+
+##### 6. ERC-721 Approve
+- approve / takeOwnership을 사용하는 전송은 2단계로 나뉩니다.
+- 소유자가 새로운 소유자의 address와 그에게 보내고 싶은 _tokenId를 사용하여 approve를 호출하고
+- 새로운 소유자가 _tokenId를 사용하여 takeOwnership 함수를 호출하면, 컨트랙트는 그가 승인된 자인지 확인하고 그에게 토큰을 전송합니다.
+- 이처럼 2번의 함수 호출이 발생하기 때문에, 우리는 함수 호출 사이에 누가 무엇에 대해 승인이 되었는지 저장할 데이터 구조가 필요합니다.
+
+```
+function approve(address _to, uint256 _tokenId) public onlyOwnerOf(_tokenId) {
+    zombieApprovals[_tokenId] = _to;
+    Approval(msg.sender, _to, _tokenId);
+  }
+```
+
+- takeOwnership에서는 msg.sender가 이 토큰을 가질 수 있도록 승인되었는지 확인하고, 승인이 되었다면 _transfer를 호출하면 됩니다.
+```
+  function takeOwnership(uint256 _tokenId) public {
+    require(zombieApprovals[_tokenId] == msg.sender);
+    address owner = ownerOf(_tokenId);
+    _transfer(owner, msg.sender, _tokenId);
+  }
+```
+
+##### 7. 오버플로우와 언더플로우
+- 스마트 컨트랙트를 작성할 때 주요한 보안 기능으로 오버플로우와 언더플로우를 막아야합니다.
+- 오버플로우 : 8비트 데이터를 저장할 수 있는 uint8 하나를 가지고 있다고 할 때, 우리가 저장할 수 있는 가장 큰 수는 이진수로 11111111(또는 십진수로 2^8 - 1 = 255)입니다.
+
+```
+// 오버플로우 예시
+uint8 number = 255;
+number++;
+// 결과는 number = 0 으로 변경됩니다.
+
+// 언더플로우 예시
+uint8 number = 0;
+number--;
+// 결과는 number = 255
+// uint는 마이너스(-) 값이 없기 때문에 255로 돌아갑니다.
+```
+
+##### 8. 라이브러리(Library)
+- 솔리디티에서 특별한 종류의 컨트랙트입니다.
+- 라이브러리는 기본(native) 데이터 타입에 따로 정의된 함수를 붙일 때 사용됩니다.(javascript의 prototype에 함수 추가 하듯이..)
+- using 명령어를 사용하여 호출가능합니다.
+
+```
+using SafeMath for uint256;
+
+uint256 a = 5;
+uint256 b = a.add(3); // 5 + 3 = 8
+uint256 c = a.mul(2); // 5 * 2 = 10
+```
+
+##### 9. SafeMath
+- 오버플로우 / 언더플로우를 막기 위해 OpenZeppelin에서 기본적으로 이런 문제를 막아주는 SafeMath라고 하는 라이브러리를 만들었습니다.
+- SafeMath 라이브러리는 4개의 함수를 가지고 있습니다.(add, sub, mul, div)
+- using 명령어를 통해서 이제 uint256에서 이 함수들에 접근할 수 있습니다.
+
+```
+library SafeMath {
+
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return c;
+  }
+
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+```
+
+- 라이브러리는 contract와 비슷하지만 조금 다릅니다. 
+- 한번 using 명령어로 정의를 하면 아무 곳에서나 정의한 함수를 사용 할 수 있습니다.
+- 주의!!!!!!!!! : 만약 uint8에 .add를 호출한다면, 타입이 uint256로 변환
+
+```
+using SafeMath for uint;
+// 위와 같이 정의하면 아무곳에서나 사용가능합니다.
+uint test = 2;
+test = test.mul(3); // test = 6
+test = test.add(5); // test = 11
+```
+
+```
+// SafeMath의 add 함수
+function add(uint256 a, uint256 b) internal pure returns (uint256) {
+  uint256 c = a + b;
+  assert(c >= a);
+  return c;
+}
+```
+
+- assert : 조건을 만족하지 않으면 에러를 발생시킵니다.(조건 안맞으면 throw e 같은것 같네요) assert와 require의 차이점은, require는 함수 실행이 실패하면 남은 가스를 사용자에게 되돌려 주지만, assert는 그렇지 않습니다. 그렇기 때문에 대부분은 require를 씁니다. assert는 일반적으로 코드가 심각하게 잘못 실행될 때 사용됩니다.
+- SafeMath의 add, sub, mul, div는 4개의 기본 수학 연산을 하는 함수이지만, 오버플로우나 언더플로우가 발생하면 에러를 발생시킵니다.
+
+
+##### 10. Comment(주석)
+- 한줄 주석은 //
+- 여러줄 주석은 /* .... */
+- 구체적인 주석을 위한 표준으로 natspec 형식을 사용합니다.
+- @notice는 사용자에게 컨트랙트/함수가 무엇을 하는지 설명합니다.
+- @dev는 개발자에게 추가적인 상세 정보를 설명하기 위해 사용됩니다.
+- @param과 @return은 함수에서 어떤 매개 변수와 반환값을 가지는지 설명합니다.
+- 되도록이면 @dev 주석은 남기는 것이 좋습니다.
+
+```
+/// @title 기본적인 산수를 위한 컨트랙트
+/// @author 개발자
+/// @notice 지금은 곱하기 함수만 추가한다.
+contract Math {
+  /// @notice 2개의 숫자를 곱한다.
+  /// @param x 첫 번쨰 uint.
+  /// @param y 두 번째 uint.
+  /// @return z (x * y) 곱의 값
+  /// @dev 이 함수는 현재 오버플로우를 확인하지 않는다.
+  function multiply(uint x, uint y) returns (uint z) {
+    // 이것은 일반적인 주석으로, natspec에 포함되지 않는다.
+    z = x * y;
+  }
+}
+```
+
+챕터6
+
+이번에는 프론트앤드 단과 거기에 사용되는 web3.js 를 배워봅니다.
+
+___
+
+##### 1. Web3.js 소개
+- 이더리움 재단에서 만든 자바스크립트 라이브러리
+- 이더리움 노드들은 JSON-RPC 로만 소통이 가능
+- 노드로 전달해야 하는 내용들
+
+> 스마트 컨트랙트의 주소
+실행하고자 하는 함수, 그리고
+그 함수에 전달하고자 하는 변수들
+
+```
+// JSON-RPC 샘플
+{
+  "jsonrpc": "2.0",
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from": "0xb60e8dd61c5d32be8058bb8eb970870f07233155",
+      "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
+      "gas": "0x76c0",
+      "gasPrice": "0x9184e72a000",
+      "value": "0x9184e72a",
+      "data": "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675"
+    }
+  ],
+  "id": 1
+}
+```
+
+- Web3.js는 이러한 문법을 알 필요 없이 간단한 함수를 제공하여 줍니다.
+
+
+```
+// 위의 샘플과 동일한 기능(web3.js 사용)
+CryptoZombies.methods.createRandomZombie("Vitalik Nakamoto")
+  .send({ from: "0xb60e8dd61c5d32be8058bb8eb970870f07233155", gas: "3000000" })
+```
+
+- web3.js 설치
+
+```
+// 개발환경에 맞는 것으로 설치!!
+// NPM을 사용할 때
+npm install web3
+
+// Yarn을 사용할 때
+yarn add web3
+
+// Bower를 사용할 때
+bower install web3
+
+// CDN
+src="web3.min.js"
+```
+
+##### 2. web3 Provider - Infura
+-  Web3.js에서 Web3 프로바이더를 설정하는 것은 어떤 노드와 통신을 해야 하는지 설정하는 것입니다. 이는 전통적인 웹 앱에서 API 호출을 위해 원격 웹 서버의 URL을 설정하는 것과 비슷하게 생각하면 됩니다.
+- Infura : 빠른 읽기를 위한 캐시 계층을 포함하는 다수의 이더리움 노드를 운영하는 서비스입니다. 접근을 위한 API를 무료로 사용할 수 있고, Infura를 프로바이더로 사용하면, 자신만의 이더리움을 설치하고 계속 유지할 필요 없이 이더리움 블록체인과 메세지를 확실히 주고받을 수 있습니다.
+
+```
+// Web3 Provider로 Infura 설정
+var web3 = new Web3(new Web3.providers.WebsocketProvider("wss://mainnet.infura.io/ws"));
+```
+
+##### 3. 블록체인에 서명(쓰기)를 하기 위한 툴 - Metamask
+- 많이들 알고 계시는 메타마스크입니다.(트론에서는 TronLink를 사용해야겠지요.)
+- 이더리움 계정과 개인키를 안전하게 관리하고 Web3.js를 사용하는 웹사이트들과 상호작용을 할 수 있도록 해줍니다.
+- 메타마스크의 Web3 Provider 사용하는 방법은, 우리의 앱(웹)에서 web3이 존재하는지 확인하고 존재하면 web3.currentProvider을 설정하면 됩니다.
+
+```
+window.addEventListener('load', function() {
+
+  // Web3가 브라우저에 주입되었는지 확인(Mist/MetaMask)
+  if (typeof web3 !== 'undefined') {
+    // Mist/MetaMask의 프로바이더 사용
+    web3js = new Web3(web3.currentProvider);
+  } else {
+    // 사용자가 Metamask를 설치하지 않은 경우에 대해 처리
+    // 사용자들에게 Metamask를 설치하라는 등의 메세지를 보여줄 것
+  }
+
+  // 이제 앱을 시작하고 web3에 자유롭게 접근 할 수 있습니다.
+  startApp()
+
+})
+```
+
+
+##### 4. 컨트랙트와 설정(초기화 인스턴스화)
+- web3.js는 스마트 컨트랙트와 통신을 위해 2가지(컨트랙트 주소, ABI)가 필요합니다.
+- 컨트랙트 주소 : 스마트 컨트랙트를 모두 작성한 후, 그걸 컴파일한 후 이더리움에 배포할 것입니다. 컨트랙트를 배포한 후, 해당 컨트랙트는 영원히 존재하는, 이더리움 상에서 고정된 주소를 얻습니다. 이 주소를 통해서 만든 컨트랙트에 접근이 가능합니다.
+- 컨트랙트 ABI(Application Binary Interface) : 기본적으로 JSON 형태로 컨트랙트의 메소드를 표현하는 것입니다. 컨트랙트가 이해할 수 있도록 하려면 Web3.js가 어떤 형태로 함수 호출을 해야 하는지 알려주는 것입니다. 컨트랙트를 컴파일 하면 컴파일러가 ABI를 알려줍니다. 이 것은 컨트랙트 주소와 함께 사용되기 때문에 저장해야 하는 부분입니다.
+- Web3.js 컨트랙트 인스턴스화 하기 
+
+```
+// 컨트랙트의 주소와 ABI를 얻고 나면, 다음과 같이 Web3에서 인스턴스화할 수 있다.
+// myContract 인스턴스화
+var myContract = new web3js.eth.Contract(myABI, myContractAddress);
+```
+
+##### 5. 컨트랙트 함수 호출(call, send)
+- 컨트랙트의 함수를 호출하기 위해 사용되는 메소드 : call, send
+
+##### 5-1. Call
+- view와 pure 함수를 위해 사용됩니다.
+- js의 promise 기반으로 작동합니다.(web3.js 1.0 버전 이후부터 적용, 이전에는 다르게..)
+- 그렇기 때문에 로컬 노드에서만 실행하여, 블록체인에 트랜잭션을 만들지 않습니다.
+- 그렇기 때문에!! 가스 소모 없음!! 트랜잭션 없음!! 메타마스크 안씀!!
+
+```
+// call sample
+myContract.methods.myMethod(123).call()
+```
+
+- call 사용 예시
+```
+function getZombieDetails(id) {
+  return cryptoZombies.methods.zombies(id).call()
+}
+
+// 함수를 호출하고 결과를 가지고 무언가를 처리:
+getZombieDetails(15)
+.then(function(result) {
+  console.log("Zombie 15: " + JSON.stringify(result));
+});
+```
+
+```
+// 결과
+{
+  "name": "H4XF13LD MORRIS'S COOLER OLDER BROTHER",
+  "dna": "1337133713371337",
+  "level": "9999",
+  "readyTime": "1522498671",
+  "winCount": "999999999",
+  "lossCount": "0" // Obviously.
+}
+```
+
+##### 5-2. Send
+- 트랜잭션을 만들고 블록체인 상의 데이터를 변경합니다.
+- view, pure가 아닌 모든 함수에 대해 send를 사용해야 합니다.
+- 그렇기 때문에 가스비를 소모하고, 메타마스크에서 트랜잭션에 서명하라는 창이 뜹니다.
+
+```
+// send sample(call과 구문은 동일)
+myContract.methods.myMethod(123).send()
+```
+
+##### 6. Metamask 및 계정
+- 사용자의 계정을 가져오는 것은 설치된 메타마스크를 통해서 가져 올 수 있습니다.
+- 가져올 때에는 현재 "활성화" 되어 있는 계정을 가져옵니다.
+- 활성화 되는 계정은 매번 바뀔 수 있으므로 이를 유의하여 개발을 해야합니다.
+
+```
+// 활성화된 계정 가져오기
+var userAccount = web3.eth.accounts[0]
+```
+
+```
+// 활성화된 계정 변경을 알아내기 위해서 setInterval로 확인 하곤 합니다.
+var accountInterval = setInterval(function() {
+  // 계정이 바뀌었는지 확인
+  if (web3.eth.accounts[0] !== userAccount) {
+    userAccount = web3.eth.accounts[0];
+    // 새 계정에 대한 UI로 업데이트하기 위한 함수 호출
+    updateInterface();
+  }
+}, 100);
+```
+
+##### 7. 트랜잭션 전송
+- 트랜잭션 전송은 "send"명령어를 사용합니다.
+- 이는 from 주소가 필요합니다.(solidity에서는 msg.sender로 받습니다.)
+- 이는 물론 gas를 소모하게 됩니다.
+- 사용자가 트랜잭션 전송을 하고 난 후 실제로 블록체인에 적용될 때 까지는 상당한 시간이 필요합니다. 가스량에 따라 처리 시간이 결정 될 것입니다.
+- send 함수는 호출 뒤에 "receipt", "error" 이벤트리스너를 연결합니다.
+- receipt : 트랜잭션이 이더리움의 블록에 포함 될 때 발생하게 됩니다.
+- error : 트랜잭션이 블럭에 포함되지 못했을 때 발생하게 됩니다.
+- 이벤트는 "on"을 이용하여 연결합니다.
+- 가스량을 지정해서 전송할 수도 있는데, 지정하지 않으면 메타마스크를 통해서 유저가 설정하게 됩니다.
+
+- send sample
+
+```
+function createRandomZombie(name) {
+  // 시간이 꽤 걸릴 수 있으니, 트랜잭션이 보내졌다는 것을
+  // 유저가 알 수 있도록 UI를 업데이트해야 함
+  $("#txStatus").text("Creating new zombie on the blockchain. This may take a while...");
+  // 우리 컨트랙트에 전송하기:
+  // 가스량을 지정해서 보낼 수 도 있음{ from: userAccount, gas: 3000000 }
+  return CryptoZombies.methods.createRandomZombie(name)
+  .send({ from: userAccount })
+  .on("receipt", function(receipt) {
+    $("#txStatus").text("Successfully created " + name + "!");
+    // 블록체인에 트랜잭션이 반영되었으며, UI를 다시 그려야 함
+    getZombiesByOwner(userAccount).then(displayZombies);
+  })
+  .on("error", function(error) {
+    // 사용자들에게 트랜잭션이 실패했음을 알려주기 위한 처리
+    $("#txStatus").text(error);
+  });
+}
+```
+
+##### 8. Payable 함수 호출
+- 앞에서 공부했다 싶이 payable은 컨트랙트내에서 토큰(이더리움)을 받을 수 있는 함수입니다.
+- 함수를 이용해 ETH를 보내는 방법은 간단하지만, 이더가 아니라 wei로 얼마를 보낼지 정해야 합니다.
+- wei : 이더리움의 가장 작은 하위 단위입니다. 1ETH = 10^18 wei
+
+```
+// web3.js 함수를 이용해서 1ETH를 WEI로 변경
+web3js.utils.toWei("1");
+```
+
+```
+// 스마트컨트랙트의 payable 함수 호출
+// levelUp 함수로 0.001ETH를 전송하는 코드
+CryptoZombies.methods.levelUp(zombieId)
+.send({ from: userAccount, value: web3js.utils.toWei("0.001") })
+```
+
+##### 9. Event 구독하기
+- 스마트컨트랙트 내부에 설정된 event를 프론트엔드단에서 받을 수 있습니다.
+- contract 내부의 event 내용
+```
+event NewZombie(uint zombieId, string name, uint dna);
+```
+
+- web3.js를 이용한 Event 수신
+```
+cryptoZombies.events.NewZombie()
+.on("data", function(event) {
+  let zombie = event.returnValues;
+  // `event.returnValue` 객체에서 이 이벤트의 세 가지 반환 값에 접근할 수 있네:
+  console.log("새로운 좀비가 태어났습니다!", zombie.zombieId, zombie.name, zombie.dna);
+}).on("error", console.error);
+```
+
+##### 10. indexed 사용하기
+- 이벤트를 필터링하고 현재 사용자와 연관된 변경만을 수신하기 위해서는 contract의 indexed 키워드를 이용해야 합니다.
+- contract 내부의 event(indexed 를 사용한...)
+```
+event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+```
+
+- 위의 경우 _from, _to가 indexed 되어 있기 때문에, 프론트엔드의 이벤트리스너에서 이들을 필터링 할 수 있습니다.
+
+```
+// `filter`를 사용해 `_to`가 `userAccount`와 같을 때만 코드를 실행
+cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
+.on("data", function(event) {
+  let data = event.returnValues;
+  // 현재 사용자가 방금 좀비를 받았네!
+  // 해당 좀비를 보여줄 수 있도록 UI를 업데이트할 수 있도록 여기에 추가
+}).on("error", console.error);
+```
+
+##### 11. 지난 이벤트에 대해 질의
+- getPastEvents를 이용하여 지난 이벤트에 대해 질의하고, "fromBlock", "toBlock" 필터들을 이용하여 이벤트 로그에 대한 시간 범위를 솔리디티에 전달할 수 있습니다.(block : 이더리움 블럭 번호)
+
+```
+// getPastEvents sample
+cryptoZombies.getPastEvents("NewZombie", { fromBlock: 0, toBlock: "latest" })
+.then(function(events) {
+  // `events`는 우리가 위에서 했던 것처럼 반복 접근할 `event` 객체들의 배열이네.
+  // 이 코드는 생성된 모든 좀비의 목록을 우리가 받을 수 있게 할 것이네.
+});
+```
+
+### 중요!!!!!!
+- 위 함수를 이용하면 저렴한 형태의 storage가 사용가능해집니다.
+- 데이터를 블록체인에 기록하는 것이 gas를 가장 많이 지불하는 작업 중 하나이지만, 이벤트를 이용 하는 것이 가스측면에서 훨씬 더 저렴합니다.
+- 어떤 히스토리를 필요로 하는 자료의 경우, 이를 블록체인에 기록을 해버리면 많은 가스비용을 소모되지만, 이벤트를 이용하고 getPastEvents 함수를 이용하면 블록체인에 기록 없이 조회가 가능해지는 부분입니다.
+
+
